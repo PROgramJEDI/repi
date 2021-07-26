@@ -1,2 +1,2 @@
-# repi
+# REPI
 Regular Expression Programming Interface
