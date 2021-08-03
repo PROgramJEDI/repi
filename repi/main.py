@@ -1,10 +1,9 @@
 # Regular Expression Programming Interface
 
-
-DIGIT       = r'\d'
-WORDCHAR    = r'\w'
-WHITESPACE  = r'\s'
-WORDBOUNDRY = r'\b'
+DIGIT      		= r'\d'
+WORDCHAR    	= r'\w'
+WHITESPACE 		= r'\s'
+WORDBOUNDRY 	= r'\b'
 
 NOT_DIGIT       = r'\D'
 NOT_WORDCHAR    = r'\W'
@@ -17,11 +16,8 @@ class Expression(object):
 	def __init__(self, exp: str):
 		self._exp = exp
 
-	def __getitem__(self, index):
-		return self._exp[index]
-
-	def __repr__(self): 
-		return self.exp
+	def __getitem__(self, index: int):
+		return self.exp[index]
 
 	def __add__(self, other):
 		def remove_sides(exp: str):
@@ -36,15 +32,21 @@ class Expression(object):
 				return exp[:-1]
 			return exp
 
-		return Expression(f'{remove_sides(self.exp)}{remove_sides(other.exp)}')
+		first = self.exp if self.__is_close() else self.exp.exp
+		second = other.exp if other.__is_close() else other.exp.exp
+
+		return Expression(f'{remove_sides(first)}{remove_sides(second)}')
+
+	def __is_close(self):
+		return type(self) is Expression
 
 	@property
 	def exp(self): 
 		return self._exp
 
 	def times(self, n: int):
-		assert n > 1 and isinstance(n, int), 'change "n" to be greater than +1 and an integer!'
-		return Expression(f'{self.exp}{{{n}}}')
+		assert n > 1 and isinstance(n, int), 'change "n" to be an integer greater than +1!'
+		return Expression(f'{self.exp if self.__is_close() else self.exp.exp}{{{n}}}')
 
 	def until(self):
 		pass
@@ -64,9 +66,18 @@ class Range(Expression):
 
 		self.__is_valid(self._start, self._end)
 
-	def __repr__(self):
-		return self.exp.exp
+	def __is_valid(self, start, end):		
+		if isinstance(start, int) and isinstance(end, int):
+			assert (0 <= start <= 9) and (0 <= end <= 9) and (start <= end), 'set the range with numbers between 0 and 9, and "start" should be bigger or equal to "end"!'
+			return
 
+		from string import ascii_lowercase as ascii_L, ascii_uppercase as ascii_U
+
+		magnitude_check = (start.islower() and end.islower()) or (start.isupper() and end.isupper())
+		position_check = (ascii_L.index(start) <= ascii_L.index(end)) or (ascii_U.index(start) <= ascii_U.index(end))
+
+		assert position_check, '"start" and "end" should be Capitalized or exactly the opposite!'
+	
 	@property
 	def exp(self):
 		a, b = self.start, self.end
@@ -90,18 +101,6 @@ class Range(Expression):
 		self.__is_valid(self._start, self._end)
 		self._end = value
 
-	def __is_valid(self, start, end):		
-		if isinstance(start, int) and isinstance(end, int):
-			assert (0 <= start <= 9) and (0 <= end <= 9) and (start <= end), 'set the range with numbers between 0 and 9, and "start" should be bigger or equal to "end"!'
-			return
-
-		from string import ascii_lowercase as ascii_L, ascii_uppercase as ascii_U
-
-		magnitude_check = (start.islower() and end.islower()) or (start.isupper() and end.isupper())
-		position_check = (ascii_L.index(start) <= ascii_L.index(end)) or (ascii_U.index(start) <= ascii_U.index(end))
-
-		assert position_check, '"start" and "end" should be Capitalized or exactly the opposite!'
-
 
 
 class OR(Expression):
@@ -109,8 +108,3 @@ class OR(Expression):
 	# OR('a', 'z')
 	# OR(1, 3)
 	pass
-
-
-
-def add(*exps):
-	return ''.join(xp.exp for xp in exps)
