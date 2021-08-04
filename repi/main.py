@@ -72,10 +72,9 @@ class Range(Expression):
 			return
 
 		from string import ascii_lowercase as ascii_L, ascii_uppercase as ascii_U
-
-		magnitude_check = (start.islower() and end.islower()) or (start.isupper() and end.isupper())
-		position_check = (ascii_L.index(start) <= ascii_L.index(end)) or (ascii_U.index(start) <= ascii_U.index(end))
-
+		
+		are_lower = start.islower() and end.islower()
+		position_check = ascii_L.index(start) <= ascii_L.index(end) if are_lower else ascii_U.index(start) <= ascii_U.index(end)
 		assert position_check, '"start" and "end" should be Capitalized or exactly the opposite!'
 	
 	@property
@@ -100,11 +99,3 @@ class Range(Expression):
 	def end(self, value):
 		self.__is_valid(self._start, self._end)
 		self._end = value
-
-
-
-class OR(Expression):
-	# OR(Range(0,4), Range('a', 'z')
-	# OR('a', 'z')
-	# OR(1, 3)
-	pass
