@@ -32,7 +32,8 @@ class Expression(object):
 				return string[:-1]
 			return string
 
-		return Expression(f'{remove_sides(self.string)}{remove_sides(other.string)}')
+		self.string = f'{remove_sides(self.string)}{remove_sides(other.string)}'
+		return self
 
 	@property
 	def string(self): 
@@ -44,23 +45,27 @@ class Expression(object):
 
 	def times(self, n: int):
 		assert n > 1 and isinstance(n, int), 'change "n" to be an integer greater than +1!'
-		return Expression(f'{self.string}{{{n}}}')
+		self.string = f'{self.string}{{{n}}}'
+		return self
 
 	def until(self):
 		pass
 
 	def beginswith(self): 
-		return Expression(f'^{self.string}')
+		self.string = f'^{self.string}'
+		return self
 
 	def endswith(self): 
-		return Expression(f'{self.string}$')
+		self.string = f'{self.string}$'
+		return self
 
 	def OR(self, exp):
 		# convert the expression to Expression, if it's not in that type.
 		exp = Expression(exp) if type(exp) in (int, str, float) else exp
 		# check and convert to all types being Expression objects.
 		exp, self = list(map(lambda x: x if type(x) is Expression else x.exp, (exp, self)))
-		return Expression(f'({self.string}|{exp.string})')
+		self.string = f'({self.string}|{exp.string})'
+		return self
 
 
 
@@ -74,7 +79,7 @@ class Range(Expression):
 	def __is_valid(self, start, end):		
 		if isinstance(start, int) and isinstance(end, int):
 			assert (0 <= start <= 9) and (0 <= end <= 9) and (start <= end), 'set the range with numbers between 0 and 9, and "start" should be bigger or equal to "end"!'
-			return
+			return None
 
 		from string import ascii_lowercase as ascii_L, ascii_uppercase as ascii_U
 		
