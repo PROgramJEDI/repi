@@ -13,49 +13,54 @@ NOT_WORDBOUNDRY = r'\B'
 
 
 class Expression(object):
-	def __init__(self, exp: str):
-		self._exp = exp
+	def __init__(self, string: str):
+		self._string = string
 
 	def __getitem__(self, index: int):
-		return self.exp[index]
+		return self.string[index]
 
 	def __add__(self, other):
-		def remove_sides(exp: str):
-			first = (exp[0] == "'")
-			last = (exp[-1] == "'")
+		def remove_sides(string: str):
+			first = (string[0] == "'")
+			last = (string[-1] == "'")
 
 			if first and last:
-				return exp[1:-1]
+				return string[1:-1]
 			elif first:
-				return exp[1:]
+				return string[1:]
 			elif last:
-				return exp[:-1]
-			return exp
+				return string[:-1]
+			return string
 
-		first = self.exp if self.__is_close() else self.exp.exp
-		second = other.exp if other.__is_close() else other.exp.exp
-
-		return Expression(f'{remove_sides(first)}{remove_sides(second)}')
-
-	def __is_close(self):
-		return type(self) is Expression
+		return Expression(f'{remove_sides(self.string)}{remove_sides(other.string)}')
 
 	@property
-	def exp(self): 
-		return self._exp
+	def string(self): 
+		return self._string
+
+	@string.setter
+	def string(self, value):
+		self._string = value
 
 	def times(self, n: int):
 		assert n > 1 and isinstance(n, int), 'change "n" to be an integer greater than +1!'
-		return Expression(f'{self.exp if self.__is_close() else self.exp.exp}{{{n}}}')
+		return Expression(f'{self.string}{{{n}}}')
 
 	def until(self):
 		pass
 
 	def beginswith(self): 
-		return Expression(f'^{self.exp}')
+		return Expression(f'^{self.string}')
 
 	def endswith(self): 
-		return Expression(f'{self.exp}$')
+		return Expression(f'{self.string}$')
+
+	def OR(self, exp):
+		# convert the expression to Expression, if it's not in that type.
+		exp = Expression(exp) if type(exp) in (int, str, float) else exp
+		# check and convert to all types being Expression objects.
+		exp, self = list(map(lambda x: x if type(x) is Expression else x.exp, (exp, self)))
+		return Expression(f'({self.string}|{exp.string})')
 
 
 
@@ -75,7 +80,7 @@ class Range(Expression):
 		
 		are_lower = start.islower() and end.islower()
 		position_check = ascii_L.index(start) <= ascii_L.index(end) if are_lower else ascii_U.index(start) <= ascii_U.index(end)
-		assert position_check, '"start" and "end" should be Capitalized or exactly the opposite!'
+		assert position_check, '"start" and "end" should be following letters with the same shape (capitalized/non-capitalized)!'
 	
 	@property
 	def exp(self):
